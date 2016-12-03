@@ -56,13 +56,14 @@ class PASource : PANode {
 
 class PASink : PANode {
     uint32 monitor = PulseAudio.INVALID_INDEX;
+    public GFlow.Sink sink;
 
     public PASink (Context ctx, SinkInfo i) {
         index = i.index;
         name = i.description;
         monitor = i.monitor_source;
 
-        var sink = new GFlow.SimpleSink (0);
+        sink = new GFlow.SimpleSink (0);
         sink.name = "input";
         add_sink (sink);
 
@@ -90,9 +91,17 @@ class PAApp : PANode {
         src.name = "output";
         add_source (src);
 
+        var sink = nodes.get (i.sink);
+        if (sink is PASink) {
+            src.link (((PASink)sink).sink);
+        }
+
         child = new Gtk.Label (name);
     }
 }
+
+// index -> node
+HashTable<uint32, PANode> nodes;
 
 class App : Gtk.Application {
     Pulse pa = new Pulse ();
@@ -112,6 +121,8 @@ class App : Gtk.Application {
         win.set_default_size (800, 600);
         win.show_all ();
 
+        nodes = new HashTable<uint32, PANode> (direct_hash, direct_equal);
+
         pa.ready.connect (ctx => {
             ctx.get_source_info_list ((ctx, i, eol) => {
                 if (i == null)
@@ -120,18 +131,21 @@ class App : Gtk.Application {
                 if (i.monitor_of_sink != PulseAudio.INVALID_INDEX)
                     return;
                 var w = new PASource (ctx, i);
+                nodes.insert (w.index, w);
                 nodeview.add_with_child (w, w.child);
             });
             ctx.get_sink_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
                 var w = new PASink (ctx, i);
+                nodes.insert (w.index, w);
                 nodeview.add_with_child (w, w.child);
             });
             ctx.get_sink_input_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
                 var w = new PAApp (ctx, i);
+                nodes.insert (w.index, w);
                 nodeview.add_with_child (w, w.child);
             });
         });
