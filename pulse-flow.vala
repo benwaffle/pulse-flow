@@ -26,43 +26,69 @@ class Pulse : Object {
 
         if (ctx.get_state () == Context.State.READY) {
             ready (ctx);
-            /*
-            ctx.get_sink_info_list ((ctx, i, eol) => {
-                if (eol == 1)
-                    return;
-                print (@"Sink: $(i.description)\n");
-            });
-            ctx.get_source_info_list ((ctx, i, eol) => {
-                if (eol == 1)
-                    return;
-                print (@"Source: $(i.description)\n");
-            });
-            */
         }
     }
 }
 
-class PASource : GFlow.SimpleNode {
+abstract class PANode : GFlow.SimpleNode {
     public Gtk.Widget child;
+    public uint32 index = PulseAudio.INVALID_INDEX;
+}
 
-    public PASource (SourceInfo i) {
+class PASource : PANode {
+    public PASource (Context ctx, SourceInfo i) {
+        index = i.index;
         name = i.description;
+
         var src = new GFlow.SimpleSource (0);
         src.name = "output";
         add_source (src);
 
-        child = new Gtk.Label (name);
+        // for (int x = 0; x < i.n_ports; ++x) {
+        //     var src = new GFlow.SimpleSource (0);
+        //     src.name = i.ports[x]->description;
+        //     add_source (src);
+        // }
+
+        child = new Gtk.Label ("");
     }
 }
 
-class PASink : GFlow.SimpleNode {
-    public Gtk.Widget child;
+class PASink : PANode {
+    uint32 monitor = PulseAudio.INVALID_INDEX;
 
-    public PASink (SinkInfo i) {
+    public PASink (Context ctx, SinkInfo i) {
+        index = i.index;
         name = i.description;
+        monitor = i.monitor_source;
+
         var sink = new GFlow.SimpleSink (0);
         sink.name = "input";
         add_sink (sink);
+
+        if (monitor != PulseAudio.INVALID_INDEX) {
+            // get info for its monitor
+            ctx.get_sink_info_by_index (monitor, (ctx, i, eol) => {
+                if (i == null)
+                    return;
+                var src = new GFlow.SimpleSource (0);
+                src.name = "monitor";
+                add_source (src);
+            });
+        }
+
+        child = new Gtk.Label ("");
+    }
+}
+
+class PAApp : PANode {
+    public PAApp (Context ctx, SinkInputInfo i) {
+        index = i.index;
+        name = i.name;
+
+        var src = new GFlow.SimpleSource (0);
+        src.name = "output";
+        add_source (src);
 
         child = new Gtk.Label (name);
     }
@@ -80,8 +106,6 @@ class App : Gtk.Application {
         var win = new Gtk.ApplicationWindow (this);
         var sw = new Gtk.ScrolledWindow (null, null);
         var nodeview = new GtkFlow.NodeView ();
-        nodeview.editable = true;
-        nodeview.show_types = true;
         sw.add (nodeview);
         win.add (sw);
 
@@ -90,15 +114,24 @@ class App : Gtk.Application {
 
         pa.ready.connect (ctx => {
             ctx.get_source_info_list ((ctx, i, eol) => {
-                if (eol == 1)
+                if (i == null)
                     return;
-                var w = new PASource (i);
+                // don't show monitors as separate nodes
+                if (i.monitor_of_sink != PulseAudio.INVALID_INDEX)
+                    return;
+                var w = new PASource (ctx, i);
                 nodeview.add_with_child (w, w.child);
             });
             ctx.get_sink_info_list ((ctx, i, eol) => {
-                if (eol == 1)
+                if (i == null)
                     return;
-                var w = new PASink (i);
+                var w = new PASink (ctx, i);
+                nodeview.add_with_child (w, w.child);
+            });
+            ctx.get_sink_input_info_list ((ctx, i, eol) => {
+                if (i == null)
+                    return;
+                var w = new PAApp (ctx, i);
                 nodeview.add_with_child (w, w.child);
             });
         });
