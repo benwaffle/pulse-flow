@@ -9,4 +9,7 @@ deps = [
     dependency('libpulse-mainloop-glib'),
 ]
 
-executable('pulse-flow', 'pulse-flow.vala', dependencies: deps)
+executable('pulse-flow',
+            'pulse-flow.vala',
+            dependencies: deps,
+            vala_args: ['--vapidir=' + meson.current_source_dir()])
