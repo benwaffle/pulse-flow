@@ -122,6 +122,11 @@ class Pulse : Object {
         if (eol < 0) error (PulseAudio.strerror (ctx.errno ()));
         if (eol > 0) return;
 
+        // don't show pavucontrol's peak detect nodes
+        if (Proplist.PROP_MEDIA_NAME in info.proplist &&
+            info.proplist.gets (Proplist.PROP_MEDIA_NAME) == "Peak detect")
+                return;
+
         PASourceOutput sourceoutput = (PASourceOutput) nodes[info.index];
         if (sourceoutput == null) {
             sourceoutput = new PASourceOutput (this);
