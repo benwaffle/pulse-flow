@@ -12,7 +12,13 @@ deps = [
     dependency('libpulse-mainloop-glib'),
 ]
 
+src = files([
+    'src/Pulse.vala',
+    'src/Nodes.vala',
+    'src/App.vala'
+])
+
 executable('pulse-flow',
-            'pulse-flow.vala',
+            src,
             dependencies: deps,
             vala_args: ['--vapidir=' + meson.current_source_dir()])
