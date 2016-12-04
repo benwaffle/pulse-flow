@@ -100,6 +100,19 @@ class PAApp : PANode {
     }
 }
 
+class PAEnd : PANode {
+    public PAEnd (Context ctx, SourceOutputInfo i) {
+        index = i.index;
+        name = i.name;
+
+        var sink = new GFlow.SimpleSink (0);
+        sink.name = "input";
+        add_sink (sink);
+
+        child = new Gtk.Label ("");
+    }
+}
+
 // index -> node
 HashTable<uint32, PANode> nodes;
 
@@ -145,6 +158,13 @@ class App : Gtk.Application {
                 if (i == null)
                     return;
                 var w = new PAApp (ctx, i);
+                nodes.insert (w.index, w);
+                nodeview.add_with_child (w, w.child);
+            });
+            ctx.get_source_output_info_list ((ctx, i, eol) => {
+                if (i == null)
+                    return;
+                var w = new PAEnd (ctx, i);
                 nodes.insert (w.index, w);
                 nodeview.add_with_child (w, w.child);
             });
