@@ -148,6 +148,11 @@ class App : Gtk.Application {
                 nodes.insert (w.index, w);
                 nodeview.add_with_child (w, w.child);
             });
+
+            ctx.set_subscribe_callback ((ctx, ev, idx) => {
+                print (@"$ev #$idx\n");
+            });
+            ctx.subscribe (Context.SubscriptionMask.ALL, null);
         });
     }
 }
