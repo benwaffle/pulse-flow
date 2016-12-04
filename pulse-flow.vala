@@ -172,17 +172,21 @@ class PASink : PANode {
     public void update (SinkInfo info) {
         index = info.index;
         name = "(Output) " + info.description;
-        monitor = info.monitor_source;
+        if (monitor != info.monitor_source) {
+            monitor = info.monitor_source;
 
-        if (monitor != PulseAudio.INVALID_INDEX) {
-            // get info for its monitor
-            pa.ctx.get_sink_info_by_index (monitor, (ctx, i, eol) => {
-                if (i == null)
-                    return;
-                var src = new GFlow.SimpleSource (0);
-                src.name = "monitor";
-                add_source (src);
-            });
+            if (monitor != PulseAudio.INVALID_INDEX) {
+                // get info for its monitor
+                pa.ctx.get_sink_info_by_index (monitor, (ctx, i, eol) => {
+                    if (i == null)
+                        return;
+                    var src = new GFlow.SimpleSource (0);
+                    src.name = @"monitor #$monitor";
+                    add_source (src);
+                });
+            } else {
+                // delete monitor
+            }
         }
     }
 }
