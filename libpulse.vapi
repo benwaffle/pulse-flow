@@ -175,17 +175,19 @@ namespace PulseAudio {
                 [CCode (cname="PA_VOLUME_SNPRINT_MAX")]
                 public static const size_t SNPRINT_MAX;
 
-                [CCode (cname="PA_VOLUME_MAX")]
-                public static const Volume MAX;
-
                 [CCode (cname="PA_VOLUME_NORM")]
                 public static const Volume NORM;
 
                 [CCode (cname="PA_VOLUME_MUTED")]
                 public static const Volume MUTED;
 
-                // [CCode (cname="PA_VOLUME_INVALID")]
                 [CCode (cname="PA_VOLUME_MAX")]
+                public static const Volume MAX;
+
+                [CCode (cname="PA_VOLUME_UI_MAX")]
+                public static const Volume UI_MAX;
+
+                [CCode (cname="PA_VOLUME_INVALID")]
                 public static const Volume INVALID;
 
                 [CCode (cname="pa_volume_snprint", instance_pos = 3.1)]
