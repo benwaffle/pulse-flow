@@ -63,7 +63,7 @@ class Pulse : Object {
                 ctx.get_sink_input_info (idx, this.sink_input_cb);
             if (facility == Context.SubscriptionEventType.SOURCE_OUTPUT)
                 ctx.get_source_output_info (idx, this.source_output_cb);
-        } else if (type == Context.SubscriptionEventType.REMOVE) {
+        } else if (type == Context.SubscriptionEventType.REMOVE && idx in nodes) {
             PANode? node = nodes[idx];
             node.index = PulseAudio.INVALID_INDEX;
             node.unlink_all ();
