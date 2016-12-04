@@ -252,7 +252,7 @@ class App : Gtk.Application {
 
         pa = new Pulse ();
         pa.new_node.connect (this.add);
-        pa.delete_node.connect (nodeview.remove_node);
+        pa.delete_node.connect (this.delete);
     }
 
     // positioning
@@ -262,7 +262,10 @@ class App : Gtk.Application {
     int sinky = 20;
 
     private void add (PANode node) {
-        nodeview.add_node (node);
+        if (node.child != null)
+            nodeview.add_with_child (node, node.child);
+        else
+            nodeview.add_node (node);
 
         // position the nodes
         int x, y;
@@ -277,6 +280,15 @@ class App : Gtk.Application {
         }
 
         nodeview.set_node_position (node, x, y);
+    }
+
+    private void delete (PANode node) {
+        if (node is PASource || node is PASinkInput) {
+            srcy -= 150;
+        } else {
+            sinky -= 150;
+        }
+        nodeview.remove_node (node);
     }
 }
 
