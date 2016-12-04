@@ -1,12 +1,14 @@
 using PulseAudio;
 
 class Pulse : Object {
-    Context ctx;
-    GLibMainLoop loop;
+    public Context ctx;
+    private GLibMainLoop loop;
+    public HashTable<uint32, PANode> nodes;
 
     public signal void ready (Context ctx);
 
     public Pulse () {
+        nodes = new HashTable<uint32, PANode> (direct_hash, direct_equal);
         loop = new PulseAudio.GLibMainLoop ();
         ctx = new PulseAudio.Context (loop.get_api (), "me.iofel.pulse-flow");
         ctx.set_state_callback (this.state_cb);
@@ -21,7 +23,7 @@ class Pulse : Object {
     }
 
     public void state_cb (Context ctx) {
-        Context.State state = ctx.get_state();
+        Context.State state = ctx.get_state ();
         info (@"pa state = $state\n");
 
         if (ctx.get_state () == Context.State.READY) {
@@ -31,16 +33,18 @@ class Pulse : Object {
 }
 
 abstract class PANode : GFlow.SimpleNode {
-    public Gtk.Widget child;
+    public Gtk.Widget? child = null;
     public uint32 index = PulseAudio.INVALID_INDEX;
 }
 
 class PASource : PANode {
-    public PASource (Context ctx, SourceInfo i) {
-        index = i.index;
-        name = i.description;
+    public GFlow.Source src;
 
-        var src = new GFlow.SimpleSource (0);
+    public PASource (Pulse pa, SourceInfo i) {
+        index = i.index;
+        name = "(Input) " + i.description;
+
+        src = new GFlow.SimpleSource (0);
         src.name = "output";
         add_source (src);
 
@@ -49,8 +53,6 @@ class PASource : PANode {
         //     src.name = i.ports[x]->description;
         //     add_source (src);
         // }
-
-        child = new Gtk.Label ("");
     }
 }
 
@@ -58,9 +60,9 @@ class PASink : PANode {
     uint32 monitor = PulseAudio.INVALID_INDEX;
     public GFlow.Sink sink;
 
-    public PASink (Context ctx, SinkInfo i) {
+    public PASink (Pulse pa, SinkInfo i) {
         index = i.index;
-        name = i.description;
+        name = "(Output) " + i.description;
         monitor = i.monitor_source;
 
         sink = new GFlow.SimpleSink (0);
@@ -69,7 +71,7 @@ class PASink : PANode {
 
         if (monitor != PulseAudio.INVALID_INDEX) {
             // get info for its monitor
-            ctx.get_sink_info_by_index (monitor, (ctx, i, eol) => {
+            pa.ctx.get_sink_info_by_index (monitor, (ctx, i, eol) => {
                 if (i == null)
                     return;
                 var src = new GFlow.SimpleSource (0);
@@ -77,13 +79,11 @@ class PASink : PANode {
                 add_source (src);
             });
         }
-
-        child = new Gtk.Label ("");
     }
 }
 
 class PAApp : PANode {
-    public PAApp (Context ctx, SinkInputInfo i) {
+    public PAApp (Pulse pa, SinkInputInfo i) {
         index = i.index;
         name = i.name;
 
@@ -91,17 +91,15 @@ class PAApp : PANode {
         src.name = "output";
         add_source (src);
 
-        var sink = nodes.get (i.sink);
+        var sink = pa.nodes.get (i.sink);
         if (sink is PASink) {
             src.link (((PASink)sink).sink);
         }
-
-        child = new Gtk.Label ("");
     }
 }
 
 class PAEnd : PANode {
-    public PAEnd (Context ctx, SourceOutputInfo i) {
+    public PAEnd (Pulse pa, SourceOutputInfo i) {
         index = i.index;
         name = i.name;
 
@@ -109,12 +107,12 @@ class PAEnd : PANode {
         sink.name = "input";
         add_sink (sink);
 
-        child = new Gtk.Label ("");
+        var src = pa.nodes.get (i.source);
+        if (src is PASource) {
+            sink.link (((PASource)src).src);
+        }
     }
 }
-
-// index -> node
-HashTable<uint32, PANode> nodes;
 
 class App : Gtk.Application {
     Pulse pa = new Pulse ();
@@ -134,8 +132,6 @@ class App : Gtk.Application {
         win.set_default_size (800, 600);
         win.show_all ();
 
-        nodes = new HashTable<uint32, PANode> (direct_hash, direct_equal);
-
         pa.ready.connect (ctx => {
             ctx.get_source_info_list ((ctx, i, eol) => {
                 if (i == null)
@@ -143,30 +139,22 @@ class App : Gtk.Application {
                 // don't show monitors as separate nodes
                 if (i.monitor_of_sink != PulseAudio.INVALID_INDEX)
                     return;
-                var w = new PASource (ctx, i);
-                nodes.insert (w.index, w);
-                nodeview.add_with_child (w, w.child);
+                add (new PASource (pa, i));
             });
             ctx.get_sink_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
-                var w = new PASink (ctx, i);
-                nodes.insert (w.index, w);
-                nodeview.add_with_child (w, w.child);
+                add (new PASink (pa, i));
             });
             ctx.get_sink_input_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
-                var w = new PAApp (ctx, i);
-                nodes.insert (w.index, w);
-                nodeview.add_with_child (w, w.child);
+                add (new PAApp (pa, i));
             });
             ctx.get_source_output_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
-                var w = new PAEnd (ctx, i);
-                nodes.insert (w.index, w);
-                nodeview.add_with_child (w, w.child);
+                add (new PAEnd (pa, i));
             });
 
             ctx.set_subscribe_callback ((ctx, ev, idx) => {
@@ -174,6 +162,11 @@ class App : Gtk.Application {
             });
             ctx.subscribe (Context.SubscriptionMask.ALL, null);
         });
+    }
+
+    private void add (PANode node) {
+        pa.nodes.insert (node.index, node);
+        nodeview.add_node (node);
     }
 }
 
