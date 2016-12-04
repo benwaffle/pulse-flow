@@ -678,7 +678,7 @@ namespace PulseAudio {
 
                 public static Proplist? from_string(string s);
 
-                public int contains(string key);
+                public bool contains(string key);
 
                 public void clear();
 
