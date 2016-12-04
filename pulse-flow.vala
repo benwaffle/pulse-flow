@@ -96,7 +96,7 @@ class PAApp : PANode {
             src.link (((PASink)sink).sink);
         }
 
-        child = new Gtk.Label (name);
+        child = new Gtk.Label ("");
     }
 }
 
