@@ -1,8 +1,11 @@
 using PulseAudio;
 
+/**
+ * A class to handle connections to pulseaudio and updates to info
+ */
 class Pulse : Object {
-    public Context ctx;
-    private GLibMainLoop loop;
+    public PulseAudio.Context ctx;
+    private PulseAudio.GLibMainLoop loop;
     public HashTable<uint32, PANode> nodes;
 
     public signal void ready (Context ctx);
@@ -25,6 +28,9 @@ class Pulse : Object {
         ctx.disconnect ();
     }
 
+    /**
+     * Handle pulseaudio state changes
+     */
     void state_cb (Context ctx) {
         Context.State state = ctx.get_state ();
         info (@"pa state = $state\n");
@@ -38,11 +44,14 @@ class Pulse : Object {
         }
     }
 
+    /**
+     * Handle any changes from pulseaudio
+     */
     void subscribe_cb (Context ctx, Context.SubscriptionEventType ev, uint32 idx) {
         print (@"$ev $idx\n");
 
-        var type = ev & Context.SubscriptionEventType.TYPE_MASK;
-        var facility = ev & Context.SubscriptionEventType.FACILITY_MASK;
+        var type = ev & Context.SubscriptionEventType.TYPE_MASK; // type (new, change, remove)
+        var facility = ev & Context.SubscriptionEventType.FACILITY_MASK; // facility (sink, source, ...)
 
         if (type == Context.SubscriptionEventType.NEW || type == Context.SubscriptionEventType.CHANGE) {
             if (facility == Context.SubscriptionEventType.SINK)
@@ -123,6 +132,9 @@ class Pulse : Object {
     }
 }
 
+/**
+ * A class to represent a node in our app
+ */
 abstract class PANode : GFlow.SimpleNode {
     public Pulse pa;
     public Gtk.Widget? child = null;
@@ -246,6 +258,8 @@ class App : Gtk.Application {
 
     private void add (PANode node) {
         nodeview.add_node (node);
+
+        // position the nodes
         int x, y;
         if (node is PASource || node is PASinkInput) {
             x = srcx;
