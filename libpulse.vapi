@@ -241,8 +241,9 @@ namespace PulseAudio {
         [CCode (cname="pa_cvolume", has_type_id=false)]
         public struct CVolume {
                 public uint8 channels;
-                // TODO: Replace array length with CHANNELS_MAX once vala's bug #647788 is fixed
-                public Volume values[32];
+
+                [CCode (array_length_cname = "channels")]
+                public Volume values[];
 
                 [CCode (cname="PA_SW_CVOLUME_SNPRINT_DB_MAX")]
                 public static const size_t SW_SNPRINT_DB_MAX;
