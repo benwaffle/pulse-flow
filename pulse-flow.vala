@@ -37,6 +37,7 @@ class Pulse : Object {
 
         if (ctx.get_state () == Context.State.READY) {
             ready (ctx);
+            ctx.subscribe (Context.SubscriptionMask.ALL, null);
             ctx.get_sink_info_list (this.sink_cb);
             ctx.get_source_info_list (this.source_cb);
             ctx.get_sink_input_info_list (this.sink_input_cb);
