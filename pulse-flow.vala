@@ -82,8 +82,8 @@ class PASink : PANode {
     }
 }
 
-class PAApp : PANode {
-    public PAApp (Pulse pa, SinkInputInfo i) {
+class PASinkInput : PANode {
+    public PASinkInput (Pulse pa, SinkInputInfo i) {
         index = i.index;
         name = i.name;
 
@@ -98,8 +98,8 @@ class PAApp : PANode {
     }
 }
 
-class PAEnd : PANode {
-    public PAEnd (Pulse pa, SourceOutputInfo i) {
+class PASourceOutput : PANode {
+    public PASourceOutput (Pulse pa, SourceOutputInfo i) {
         index = i.index;
         name = i.name;
 
@@ -150,12 +150,12 @@ class App : Gtk.Application {
             ctx.get_sink_input_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
-                add (new PAApp (pa, i));
+                add (new PASinkInput (pa, i));
             });
             ctx.get_source_output_info_list ((ctx, i, eol) => {
                 if (i == null)
                     return;
-                add (new PAEnd (pa, i));
+                add (new PASourceOutput (pa, i));
             });
 
             ctx.set_subscribe_callback ((ctx, ev, idx) => {
@@ -175,7 +175,7 @@ class App : Gtk.Application {
         pa.nodes.insert (node.index, node);
         nodeview.add_node (node);
         int x, y;
-        if (node is PASource || node is PAApp) {
+        if (node is PASource || node is PASinkInput) {
             x = srcx;
             y = srcy;
             srcy += 150;
