@@ -116,6 +116,7 @@ class PAEnd : PANode {
 
 class App : Gtk.Application {
     Pulse pa = new Pulse ();
+    GtkFlow.NodeView nodeview;
 
     public App () {
         Object (application_id: "me.iofel.pulse-flow",
@@ -125,11 +126,11 @@ class App : Gtk.Application {
     public override void activate () {
         var win = new Gtk.ApplicationWindow (this);
         var sw = new Gtk.ScrolledWindow (null, null);
-        var nodeview = new GtkFlow.NodeView ();
+        nodeview = new GtkFlow.NodeView ();
         sw.add (nodeview);
         win.add (sw);
 
-        win.set_default_size (800, 600);
+        win.set_default_size (1000, 600);
         win.show_all ();
 
         pa.ready.connect (ctx => {
@@ -164,9 +165,27 @@ class App : Gtk.Application {
         });
     }
 
+    // positioning
+    int srcx = 20;
+    int sinkx = 500;
+    int srcy = 20;
+    int sinky = 20;
+
     private void add (PANode node) {
         pa.nodes.insert (node.index, node);
         nodeview.add_node (node);
+        int x, y;
+        if (node is PASource || node is PAApp) {
+            x = srcx;
+            y = srcy;
+            srcy += 150;
+        } else {
+            x = sinkx;
+            y = sinky;
+            sinky += 150;
+        }
+
+        nodeview.set_node_position (node, x, y);
     }
 }
 
