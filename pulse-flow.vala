@@ -138,7 +138,7 @@ class Pulse : Object {
  */
 abstract class PANode : GFlow.SimpleNode {
     public Pulse pa;
-    public Gtk.Widget? child = null;
+    public Gtk.Box child = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
     public uint32 index = PulseAudio.INVALID_INDEX;
 }
 
@@ -193,9 +193,11 @@ class PASink : PANode {
 
 class PASinkInput : PANode {
     GFlow.Source src;
+    Gtk.Image img;
     public PASinkInput (Pulse pa) {
         this.pa = pa;
-        this.child = new Gtk.Image.from_icon_name ("dialog-question", Gtk.IconSize.BUTTON);
+        img = new Gtk.Image.from_icon_name ("dialog-question", Gtk.IconSize.BUTTON);
+        child.pack_start (img, false, false);
         src = new GFlow.SimpleSource (0);
         src.name = "output";
         add_source (src);
@@ -206,7 +208,7 @@ class PASinkInput : PANode {
         name = info.name;
 
         if (Proplist.PROP_APPLICATION_ICON_NAME in info.proplist) {
-            ((Gtk.Image) child).set_from_icon_name (info.proplist.gets (Proplist.PROP_APPLICATION_ICON_NAME), Gtk.IconSize.BUTTON);
+            img.set_from_icon_name (info.proplist.gets (Proplist.PROP_APPLICATION_ICON_NAME), Gtk.IconSize.BUTTON);
         }
 
         var sink = pa.nodes[info.sink];
@@ -267,10 +269,7 @@ class App : Gtk.Application {
     int sinky = 20;
 
     private void add (PANode node) {
-        if (node.child != null)
-            nodeview.add_with_child (node, node.child);
-        else
-            nodeview.add_node (node);
+        nodeview.add_with_child (node, node.child);
 
         // position the nodes
         int x, y;
