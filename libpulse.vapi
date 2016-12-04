@@ -948,12 +948,35 @@ namespace PulseAudio {
                         CLIENT,
                         SAMPLE_CACHE,
                         SERVER,
+                        [Version (deprecated=true)]
+                        AUTOLOAD,
                         CARD,
                         FACILITY_MASK,
                         NEW,
                         CHANGE,
                         REMOVE,
-                        TYPE_MASK
+                        TYPE_MASK;
+
+                        public string to_string() {
+                            string type = "unknown";
+                            if ((this & TYPE_MASK) == NEW) type = "new";
+                            if ((this & TYPE_MASK) == CHANGE) type = "change";
+                            if ((this & TYPE_MASK) == REMOVE) type = "remove";
+
+                            string facility = "unknown";
+                            if ((this & FACILITY_MASK) == SINK) facility = "sink";
+                            if ((this & FACILITY_MASK) == SOURCE) facility = "source";
+                            if ((this & FACILITY_MASK) == SINK_INPUT) facility = "sink-input";
+                            if ((this & FACILITY_MASK) == SOURCE_OUTPUT) facility = "source-output";
+                            if ((this & FACILITY_MASK) == MODULE) facility = "module";
+                            if ((this & FACILITY_MASK) == CLIENT) facility = "client";
+                            if ((this & FACILITY_MASK) == SAMPLE_CACHE) facility = "sample-cache";
+                            if ((this & FACILITY_MASK) == SERVER) facility = "server";
+                            if ((this & FACILITY_MASK) == AUTOLOAD) facility = "autoload";
+                            if ((this & FACILITY_MASK) == CARD) facility = "card";
+
+                            return "Event '%s' on %s".printf (type, facility);
+                        }
                 }
 
                 [CCode (cname = "pa_context_notify_cb_t")]
