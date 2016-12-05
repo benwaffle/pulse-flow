@@ -78,10 +78,8 @@ class PASinkInput : PANode {
             img.set_from_icon_name (info.proplist.gets (Proplist.PROP_APPLICATION_ICON_NAME), Gtk.IconSize.BUTTON);
         }
 
-        var sink = pa.nodes[info.sink];
-        if (sink is PASink) {
-            src.link (((PASink)sink).sink);
-        }
+        var sink = pa.sinks[info.sink];
+        src.link (sink.sink);
     }
 }
 
@@ -98,9 +96,7 @@ class PASourceOutput : PANode {
         index = info.index;
         name = info.name;
 
-        var src = pa.nodes[info.source];
-        if (src is PASource) {
-            sink.link (((PASource)src).src);
-        }
+        var src = pa.sources[info.source];
+        sink.link (src.src);
     }
 }

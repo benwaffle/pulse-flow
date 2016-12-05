@@ -6,14 +6,16 @@ using PulseAudio;
 class Pulse : Object {
     public PulseAudio.Context ctx;
     private PulseAudio.GLibMainLoop loop;
-    public HashTable<uint32, PANode> nodes;
+    public HashTable<uint32, PASink> sinks = new HashTable<uint32, PASink> (direct_hash, direct_equal);
+    public HashTable<uint32, PASource> sources = new HashTable<uint32, PASource> (direct_hash, direct_equal);
+    public HashTable<uint32, PASinkInput> sinkinputs = new HashTable<uint32, PASinkInput> (direct_hash, direct_equal);
+    public HashTable<uint32, PASourceOutput> sourceoutputs = new HashTable<uint32, PASourceOutput> (direct_hash, direct_equal);
 
     public signal void ready (Context ctx);
     public signal void new_node (PANode node);
     public signal void delete_node (PANode node);
 
     public Pulse () {
-        nodes = new HashTable<uint32, PANode> (direct_hash, direct_equal);
         loop = new PulseAudio.GLibMainLoop ();
         ctx = new PulseAudio.Context (loop.get_api (), "me.iofel.pulse-flow");
         ctx.set_state_callback (this.state_cb);
@@ -63,12 +65,30 @@ class Pulse : Object {
                 ctx.get_sink_input_info (idx, this.sink_input_cb);
             if (facility == Context.SubscriptionEventType.SOURCE_OUTPUT)
                 ctx.get_source_output_info (idx, this.source_output_cb);
-        } else if (type == Context.SubscriptionEventType.REMOVE && idx in nodes) {
-            PANode? node = nodes[idx];
-            node.index = PulseAudio.INVALID_INDEX;
-            node.unlink_all ();
-            nodes.remove (idx);
-            delete_node (node);
+        } else if (type == Context.SubscriptionEventType.REMOVE) {
+            PANode? node = null;
+            if (facility == Context.SubscriptionEventType.SINK) {
+                node = this.sinks[idx];
+                this.sinks.remove (idx);
+            }
+            if (facility == Context.SubscriptionEventType.SOURCE) {
+                node = this.sources[idx];
+                this.sources.remove (idx);
+            }
+            if (facility == Context.SubscriptionEventType.SINK_INPUT) {
+                node = this.sinkinputs[idx];
+                this.sinkinputs.remove (idx);
+            }
+            if (facility == Context.SubscriptionEventType.SOURCE_OUTPUT) {
+                node = this.sourceoutputs[idx];
+                this.sourceoutputs.remove (idx);
+            }
+
+            if (node != null) {
+                node.index = PulseAudio.INVALID_INDEX;
+                node.unlink_all ();
+                delete_node (node);
+            }
         }
     }
 
@@ -76,10 +96,10 @@ class Pulse : Object {
         if (eol < 0) error (PulseAudio.strerror (ctx.errno ()));
         if (eol > 0) return;
 
-        PASink sink = (PASink) nodes[info.index];
+        var sink = sinks[info.index];
         if (sink == null) {
             sink = new PASink (this);
-            nodes[info.index] = sink;
+            sinks[info.index] = sink;
             new_node (sink);
         }
 
@@ -94,10 +114,10 @@ class Pulse : Object {
         if (info.monitor_of_sink != PulseAudio.INVALID_INDEX)
             return;
 
-        PASource source = (PASource) nodes[info.index];
+        PASource source = sources[info.index];
         if (source == null) {
             source = new PASource (this);
-            nodes[info.index] = source;
+            sources[info.index] = source;
             new_node (source);
         }
 
@@ -108,10 +128,10 @@ class Pulse : Object {
         if (eol < 0) error (PulseAudio.strerror (ctx.errno ()));
         if (eol > 0) return;
 
-        PASinkInput sinkinput = (PASinkInput) nodes[info.index];
+        PASinkInput sinkinput = sinkinputs[info.index];
         if (sinkinput == null) {
             sinkinput = new PASinkInput (this);
-            nodes[info.index] = sinkinput;
+            sinkinputs[info.index] = sinkinput;
             new_node (sinkinput);
         }
 
@@ -127,10 +147,10 @@ class Pulse : Object {
             info.proplist.gets (Proplist.PROP_MEDIA_NAME) == "Peak detect")
                 return;
 
-        PASourceOutput sourceoutput = (PASourceOutput) nodes[info.index];
+        PASourceOutput sourceoutput = sourceoutputs[info.index];
         if (sourceoutput == null) {
             sourceoutput = new PASourceOutput (this);
-            nodes[info.index] = sourceoutput;
+            sourceoutputs[info.index] = sourceoutput;
             new_node (sourceoutput);
         }
 
