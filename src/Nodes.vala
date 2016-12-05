@@ -21,7 +21,7 @@ class PASource : PANode {
 
     public void update (SourceInfo info) {
         index = info.index;
-        name = "(Input) " + info.description;
+        name = "Source: " + info.description;
     }
 }
 
@@ -38,7 +38,7 @@ class PASink : PANode {
 
     public void update (SinkInfo info) {
         index = info.index;
-        name = "(Output) " + info.description;
+        name = "Sink: " + info.description;
         if (monitor != info.monitor_source) {
             monitor = info.monitor_source;
 
@@ -48,7 +48,7 @@ class PASink : PANode {
                     if (i == null)
                         return;
                     var src = new GFlow.SimpleSource (0);
-                    src.name = @"monitor #$monitor";
+                    src.name = "monitor";
                     add_source (src);
                 });
             } else {
