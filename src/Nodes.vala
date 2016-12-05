@@ -21,7 +21,7 @@ class PASource : PANode {
 
     public void update (SourceInfo info) {
         index = info.index;
-        name = "Source: " + info.description;
+        name = "(Source #%u) %s".printf (index, info.description);
     }
 }
 
@@ -38,7 +38,7 @@ class PASink : PANode {
 
     public void update (SinkInfo info) {
         index = info.index;
-        name = "Sink: " + info.description;
+        name = "(Sink #%u) %s".printf (index, info.description);
         if (monitor != info.monitor_source) {
             monitor = info.monitor_source;
 
@@ -73,7 +73,7 @@ class PASinkInput : PANode {
 
     public void update (SinkInputInfo info) {
         index = info.index;
-        name = info.name;
+        name = "(Sink Input #%u) %s".printf (index, info.name);
 
         if (Proplist.PROP_APPLICATION_ICON_NAME in info.proplist) {
             img.set_from_icon_name (info.proplist.gets (Proplist.PROP_APPLICATION_ICON_NAME), Gtk.IconSize.BUTTON);
@@ -97,7 +97,7 @@ class PASourceOutput : PANode {
 
     public void update (SourceOutputInfo info) {
         index = info.index;
-        name = info.name;
+        name = "(Source Output #%u) %s".printf (index, info.name);
 
         var src = pa.sources[info.source];
         src.unlink_all ();
