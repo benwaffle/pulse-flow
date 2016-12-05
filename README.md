@@ -8,9 +8,7 @@ A pulseaudio configuration tool
 - [libgtkflow](https://github.com/grindhold/libgtkflow)
 - [meson (build)](http://mesonbuild.com)
 
-### Build
+### Run
 ```
-$ meson build
-$ ninja -C build
-$ build/pulse-flow
+$ make
 ```
