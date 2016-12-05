@@ -61,6 +61,7 @@ class PASink : PANode {
 class PASinkInput : PANode {
     GFlow.Source src;
     Gtk.Image img;
+
     public PASinkInput (Pulse pa) {
         this.pa = pa;
         img = new Gtk.Image.from_icon_name ("dialog-question", Gtk.IconSize.BUTTON);
@@ -79,12 +80,14 @@ class PASinkInput : PANode {
         }
 
         var sink = pa.sinks[info.sink];
+        src.unlink_all ();
         src.link (sink.sink);
     }
 }
 
 class PASourceOutput : PANode {
     GFlow.Sink sink;
+
     public PASourceOutput (Pulse pa) {
         this.pa = pa;
         sink = new GFlow.SimpleSink (0);
@@ -97,6 +100,7 @@ class PASourceOutput : PANode {
         name = info.name;
 
         var src = pa.sources[info.source];
+        src.unlink_all ();
         sink.link (src.src);
     }
 }
