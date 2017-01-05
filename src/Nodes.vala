@@ -7,6 +7,11 @@ abstract class PANode : GFlow.SimpleNode {
     public Pulse pa;
     public Gtk.Box child = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
     public uint32 index = PulseAudio.INVALID_INDEX;
+
+    construct {
+        this.deletable = false;
+        this.resizable = false;
+    }
 }
 
 class PASource : PANode {
