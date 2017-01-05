@@ -128,6 +128,10 @@ class Pulse : Object {
         if (eol < 0) error (PulseAudio.strerror (ctx.errno ()));
         if (eol > 0) return;
 
+        // don't show nodes that play the volume changed sound
+        if (info.name == "audio-volume-change");
+            return;
+
         PASinkInput sinkinput = sinkinputs[info.index];
         if (sinkinput == null) {
             sinkinput = new PASinkInput (this);
