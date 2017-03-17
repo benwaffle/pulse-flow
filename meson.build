@@ -1,12 +1,11 @@
 project('pulse-flow', ['vala', 'c'])
 
+flow = subproject('libgtkflow')
+
 deps = [
     dependency('glib-2.0'),
     dependency('gobject-2.0'),
     dependency('gtk+-3.0'),
-
-    dependency('gflow-0.2'),
-    dependency('gtkflow-0.2'),
 
     dependency('libpulse'),
     dependency('libpulse-mainloop-glib'),
@@ -21,4 +20,13 @@ src = files([
 executable('pulse-flow',
             src,
             dependencies: deps,
-            vala_args: ['--vapidir=' + meson.current_source_dir()])
+            include_directories: [
+              flow.get_variable('gflow_inc'),
+              flow.get_variable('gtkflow_inc')
+            ],
+            link_with: [
+              flow.get_variable('gflow'),
+              flow.get_variable('gtkflow')
+            ],
+            vala_args: ['--vapidir=' + meson.current_source_dir()],
+            install: true)

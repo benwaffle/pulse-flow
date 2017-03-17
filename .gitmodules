@@ -1,0 +1,3 @@
+[submodule "subprojects/libgtkflow"]
+	path = subprojects/libgtkflow
+	url = https://github.com/grindhold/libgtkflow.git
