@@ -33,17 +33,32 @@ class PASource : PANode {
 class PASink : PANode {
     uint32 monitor = PulseAudio.INVALID_INDEX;
     public GFlow.Sink sink;
+    Gtk.Scale volumescale;
+    Gtk.Label volumelabel = new Gtk.Label ("100% (0.00dB)");
+    CVolume vols;
 
     public PASink (Pulse pa) {
         this.pa = pa;
         sink = new GFlow.SimpleSink (0);
         sink.name = "input";
         add_sink (sink);
+
+        volumescale = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL,
+            PulseAudio.Volume.MUTED, PulseAudio.Volume.UI_MAX, PulseAudio.Volume.NORM/100.0);
+        volumescale.set_value (PulseAudio.Volume.NORM);
+        volumescale.draw_value = false;
+        volumescale.add_mark (PulseAudio.Volume.NORM, Gtk.PositionType.BOTTOM, "100% (0dB)");
+
+        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
+        box.pack_start (volumescale, true, true);
+        box.pack_end (volumelabel, false, false);
+        child.add (box);
     }
 
     public void update (SinkInfo info) {
         index = info.index;
         name = "(Sink #%u) %s".printf (index, info.description);
+        vols = info.volume;
         if (monitor != info.monitor_source) {
             monitor = info.monitor_source;
 
@@ -60,6 +75,11 @@ class PASink : PANode {
                 // delete monitor
             }
         }
+
+        // TODO handle multiple channels
+        var volume = info.volume.values[0];
+        volumelabel.label = "%s (%s)".printf (volume.sprint (), volume.sw_sprint_dB ());
+        volumescale.set_value (volume);
     }
 }
 

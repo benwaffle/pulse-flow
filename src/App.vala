@@ -9,10 +9,12 @@ class App : Gtk.Application {
 
     public override void activate () {
         var win = new Gtk.ApplicationWindow (this);
+        var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
         var sw = new Gtk.ScrolledWindow (null, null);
         nodeview = new GtkFlow.NodeView ();
         sw.add (nodeview);
-        win.add (sw);
+        box.pack_end (sw, true, true);
+        win.add (box);
 
         win.set_default_size (1000, 600);
         win.show_all ();

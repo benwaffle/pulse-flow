@@ -7,4 +7,7 @@ build: configure
 configure:
 	[ -f build/build.ninja ] || meson ./build
 
-.PHONY: run build configure
+clean:
+	ninja -C build clean
+
+.PHONY: run build configure clean

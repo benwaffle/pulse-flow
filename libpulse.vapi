@@ -240,7 +240,7 @@ namespace PulseAudio {
         [CCode (cname="PA_RATE_MAX")]
         public const int RATE_MAX;
 
-        [CCode (cname="pa_cvolume", has_type_id=false)]
+        [CCode (cname="pa_cvolume", copy_function="", destroy_function="", has_type_id=false)]
         public struct CVolume {
                 public uint8 channels;
 
