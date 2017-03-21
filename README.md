@@ -10,5 +10,10 @@ A pulseaudio configuration tool
 
 ### Run
 ```
-$ make
+$ git clone --recursive https://github.com/benwaffle/pulse-flow.git
+$ cd pulse-flow
+$ mkdir build
+$ meson build
+$ ninja -C build
+$ build/pulse-flow
 ```
