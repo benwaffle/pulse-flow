@@ -48,6 +48,11 @@ class PASink : PANode {
         volumescale.set_value (PulseAudio.Volume.NORM);
         volumescale.draw_value = false;
         volumescale.add_mark (PulseAudio.Volume.NORM, Gtk.PositionType.BOTTOM, "100% (0dB)");
+        volumescale.value_changed.connect (() => {
+            for (var i=0; i<vols.channels; ++i)
+                vols.values[i] = (uint32) volumescale.get_value ();
+            pa.ctx.set_sink_volume_by_index (index, vols, null);
+        });
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         box.pack_start (volumescale, true, true);

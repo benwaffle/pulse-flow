@@ -167,6 +167,7 @@ namespace PulseAudio {
         }
 
         [CCode (cname="pa_volume_t", has_type_id=false)]
+        [SimpleType]
         public struct Volume : uint32 {
 
                 [CCode (cname="PA_SW_VOLUME_SNPRINT_DB_MAX")]
@@ -240,12 +241,11 @@ namespace PulseAudio {
         [CCode (cname="PA_RATE_MAX")]
         public const int RATE_MAX;
 
-        [CCode (cname="pa_cvolume", copy_function="", destroy_function="", has_type_id=false)]
+        [CCode (cname="pa_cvolume", has_copy_function=false, has_destroy_function=false, has_type_id=false)]
         public struct CVolume {
                 public uint8 channels;
 
-                [CCode (array_length_cname = "channels")]
-                public Volume values[];
+                public Volume values[CHANNELS_MAX];
 
                 [CCode (cname="PA_SW_CVOLUME_SNPRINT_DB_MAX")]
                 public const size_t SW_SNPRINT_DB_MAX;
