@@ -1,6 +1,7 @@
-project('pulse-flow', ['vala', 'c'])
+project('pulse-flow', 'vala', 'c',
+        default_options: ['default_library=static']) # link to gtkflow statically
 
-flow = subproject('libgtkflow')
+flow = subproject('libgtkflow', default_options: ['enable_valadoc=false'])
 
 deps = [
     dependency('glib-2.0'),
