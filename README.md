@@ -9,7 +9,7 @@ A pulseaudio configuration tool
 
 ### Run
 ```
-$ git clone --recursive https://github.com/benwaffle/pulse-flow.git
+$ git clone https://github.com/benwaffle/pulse-flow.git
 $ cd pulse-flow
 $ mkdir build
 $ meson build
