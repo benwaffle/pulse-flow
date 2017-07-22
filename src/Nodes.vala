@@ -41,6 +41,7 @@ class PASink : PANode {
         this.pa = pa;
         sink = new GFlow.SimpleSink (0);
         sink.name = "input";
+        (sink as GFlow.SimpleSink).max_sources = -1U;
         add_sink (sink);
 
         volumescale = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL,
@@ -122,6 +123,7 @@ class PASourceOutput : PANode {
         this.pa = pa;
         sink = new GFlow.SimpleSink (0);
         sink.name = "input";
+        (sink as GFlow.SimpleSink).max_sources = -1U;
         add_sink (sink);
     }
 
