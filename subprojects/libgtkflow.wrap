@@ -1,0 +1,4 @@
+[wrap-git]
+directory = libgtkflow
+url = https://github.com/grindhold/libgtkflow.git
+revision = 6033bacc9e
