@@ -11,7 +11,6 @@ A pulseaudio configuration tool
 ```
 $ git clone https://github.com/benwaffle/pulse-flow.git
 $ cd pulse-flow
-$ mkdir build
 $ meson build
 $ ninja -C build
 $ build/pulse-flow
