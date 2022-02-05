@@ -1,4 +1,4 @@
 [wrap-git]
 directory = libgtkflow
 url = https://notabug.org/grindhold/libgtkflow.git
-revision = 0.6.0
+revision = 0.8.0
